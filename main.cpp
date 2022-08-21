@@ -44,42 +44,36 @@
 using namespace std;
 
 const string SERVER_ADDRESS { "tcp://localhost:1883" };
-const string TOPIC { "juice" };
+const string TOPIC { "aria/fish00000/fish/juice" };
 const int QOS = 0;
 const string CLIENT_ID("juice_subcribe_test");
 
 const int	N_RETRY_ATTEMPTS = 5;
 
-
-typedef struct {     \
-    bool source;     \
-    bool charging;   \
-    bool fastCharge; \
-    bool preCharge;  \
-    uint8_t faults;  \
-} tStat;
-
-typedef struct {     \
-    float VBat;      \
-    float SoC;       \
-} tGauge;
-
-typedef struct {     \
-    float VBus;      \
-    float VSys;      \
-    float VBat;      \
-    float IIn;       \
-    float IChg;      \
-    float IDchg;     \
-} tCharger;
-
-struct sPowerData
+typedef struct alignas(4)
 {
-    tGauge gauge;
-    tCharger charger;
-    tStat status;
-} juice;
+    struct alignas(4) sGauge {
+        float VBat;
+        float SoC;
+    } gauge;
+    struct alignas(4) sCharger {
+        float VBus;
+        float VSys;
+        float VBat;
+        float IIn;
+        float IChg;
+        float IDchg;
+    } charger;
+    struct alignas(1) sStat {
+        bool source;
+        bool charging;
+        bool fastCharge;
+        bool preCharge;
+        uint16_t faults;
+    } status;
+} tPowerData;
 
+tPowerData juice;
 
 /////////////////////////////////////////////////////////////////////////////
 
