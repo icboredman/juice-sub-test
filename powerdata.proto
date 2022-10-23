@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package protopower;
+
+message Gauge {       // probably the only message really needed
+  float vbat = 1;
+  float soc = 2;
+  bool  charging = 3;  // same as Status.charging
+}
+
+message Charger {
+  float vbus = 1;
+  float vsys = 2;
+  float vbat = 3;
+  float iin = 4;
+  float ichg = 5;
+  float idchg = 6;
+}
+
+message Status {
+  bool   source = 1;
+  bool   charging = 2;
+  bool   fastcharge = 3;
+  bool   precharge = 4;
+  uint32 faults = 5;
+}
+
+message PowerData {
+  Gauge   gauge   = 1;
+  Charger charger = 2;
+  Status  status  = 3;
+}

@@ -6,13 +6,14 @@ project(tester  VERSION 1.0
 
 add_executable(${CMAKE_PROJECT_NAME}
    ${PROJECT_SOURCE_DIR}/main.cpp
+   ${PROJECT_SOURCE_DIR}/powerdata.pb.cc
 )
 
 find_package(OpenSSL REQUIRED)
 find_library(paho-mqttpp3 NAMES libpaho-mqttpp3.a REQUIRED)
 find_library(paho-mqtt3a NAMES libpaho-mqtt3a.so REQUIRED)
+find_package(Protobuf REQUIRED)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} paho-mqtt3a paho-mqttpp3)
+target_link_libraries(${CMAKE_PROJECT_NAME} paho-mqtt3a paho-mqttpp3 ${Protobuf_LITE_LIBRARIES})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-

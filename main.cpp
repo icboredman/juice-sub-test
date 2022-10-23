@@ -41,10 +41,13 @@
 #include <chrono>
 #include <mqtt/async_client.h>
 
+#include "powerdata.pb.h"
+
 using namespace std;
 
 const string SERVER_ADDRESS { "tcp://localhost:1883" };
 const string TOPIC { "aria/fish00000/fish/juice" };
+//const string TOPIC { "internal/juice" };
 const int QOS = 0;
 const string CLIENT_ID("juice_subcribe_test");
 
@@ -125,6 +128,9 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
     // An action listener to display the result of actions.
     action_listener subListener_;
 
+    //GOOGLE_PROTOBUF_VERIFY_VERSION;
+    protopower::Gauge juice_gauge;
+
     // This deomonstrates manually reconnecting to the broker by calling
     // connect() again. This is a possibility for an application that keeps
     // a copy of it's original connect_options, or if the app wants to
@@ -180,7 +186,19 @@ class callback : public virtual mqtt::callback, public virtual mqtt::iaction_lis
     // Callback for when a message arrives.
     void message_arrived(mqtt::const_message_ptr msg) override {
         std::cout << "Message arrived, topic: '" << msg->get_topic() << "'" << std::endl;
-        memcpy(&juice, msg->get_payload().data(), sizeof(juice));
+        string topic = msg->get_topic();
+        topic = topic.substr(0,9);
+        if (topic == "internal/")
+            memcpy(&juice, msg->get_payload().data(), sizeof(juice));
+            //memcpy(juice_, msg->get_payload().data(), sizeof(tPowerData));
+        else if (topic == "aria/fish")
+        {
+            juice_gauge.ParseFromString( msg->get_payload_str() );
+            juice.gauge.VBat = juice_gauge.vbat();
+            juice.gauge.SoC  = juice_gauge.soc();
+            juice.status.charging = juice_gauge.charging();
+        }
+
         std::cout << "\tSrc Chg F P faults" << std::endl;
         std::cout << "\t------------------" << std::endl;
         std::cout << "\t" << (int)juice.status.source << "   " <<
@@ -206,7 +224,6 @@ public:
 
 int main(int argc, char **argv)
 {
-
     // A subscriber often wants the server to remember its messages when its
     // disconnected. In that case, it needs a unique ClientID and a
     // non-clean session.
